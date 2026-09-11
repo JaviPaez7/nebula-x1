@@ -149,14 +149,18 @@ if (existsSync(WORKTREE)) {
 console.log(`4/5  publishing build output to ${BRANCH}`)
 run('git', ['worktree', 'add', '--detach', WORKTREE, 'HEAD'], { stdio: 'ignore' })
 try {
-  run('git', ['-C', WORKTREE, 'checkout', '--orphan', BRANCH], { stdio: 'ignore' })
-
-  // Clear the worktree's working directory, then place the build output at its
-  // root so the site is served from `/` rather than from `/dist/`.
+  // The working directory has to be cleared *before* the orphan checkout:
+  // git refuses to switch to a new branch when untracked files would be
+  // overwritten, which is exactly the situation the previous deploy leaves.
   for (const entry of readdirSync(WORKTREE)) {
     if (entry === '.git') continue
     rmSync(path.join(WORKTREE, entry), { recursive: true, force: true })
   }
+
+  run('git', ['-C', WORKTREE, 'checkout', '--orphan', BRANCH], { stdio: 'ignore' })
+
+  // Place the build output at the worktree root so the site is served from `/`
+  // rather than from `/dist/`.
   cpSync('dist', WORKTREE, { recursive: true })
 
   run('git', ['-C', WORKTREE, 'add', '-A', '-f'])
