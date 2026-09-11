@@ -104,7 +104,34 @@ if (changed()) {
   console.log('2/5  nothing new to commit')
 }
 
-/* ----------------------------------------------------------- 3. publish dist */
+/* --------------------------------------------------------------- 3. repo */
+
+// The remote has to exist before anything can be pushed to it, so this step
+// comes ahead of publishing the build output.
+if (!hasRepo()) {
+  console.log('3/5  creating public repository')
+  run('gh', [
+    'repo',
+    'create',
+    REPO,
+    '--public',
+    '--source',
+    '.',
+    '--remote',
+    'origin',
+    '--description',
+    'NEBULA X1 — a cinematic, scroll-driven WebGL product experience for a fictional electric hyperbike.',
+    '--push',
+  ])
+} else {
+  console.log('3/5  pushing source')
+  if (!capture('git', ['remote']).split('\n').includes('origin')) {
+    run('git', ['remote', 'add', 'origin', `https://github.com/${USER}/${REPO}.git`])
+  }
+  run('git', ['push', '-q', '-u', 'origin', 'main', '--force'])
+}
+
+/* ----------------------------------------------------------- 4. publish dist */
 
 // A detached worktree keeps the built output out of the source history
 // entirely. Starting from an orphan branch — one with no parent commit — means
@@ -119,7 +146,7 @@ if (existsSync(WORKTREE)) {
   }
 }
 
-console.log(`3/5  publishing build output to ${BRANCH}`)
+console.log(`4/5  publishing build output to ${BRANCH}`)
 run('git', ['worktree', 'add', '--detach', WORKTREE, 'HEAD'], { stdio: 'ignore' })
 try {
   run('git', ['-C', WORKTREE, 'checkout', '--orphan', BRANCH], { stdio: 'ignore' })
@@ -142,31 +169,6 @@ try {
   } catch {
     /* already gone */
   }
-}
-
-/* --------------------------------------------------------------- 4. repo */
-
-if (!hasRepo()) {
-  console.log('4/5  creating public repository')
-  run('gh', [
-    'repo',
-    'create',
-    REPO,
-    '--public',
-    '--source',
-    '.',
-    '--remote',
-    'origin',
-    '--description',
-    'NEBULA X1 — a cinematic, scroll-driven WebGL product experience for a fictional electric hyperbike.',
-    '--push',
-  ])
-} else {
-  console.log('4/5  pushing source')
-  if (!capture('git', ['remote']).split('\n').includes('origin')) {
-    run('git', ['remote', 'add', 'origin', `https://github.com/${USER}/${REPO}.git`])
-  }
-  run('git', ['push', '-q', '-u', 'origin', 'main', '--force'])
 }
 
 /* -------------------------------------------------------------- 5. pages */
