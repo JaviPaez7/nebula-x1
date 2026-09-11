@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output — the deployed site lives on the gh-pages branch
+dist/
+dist-ssr/
+
+# Local screenshots and verification artefacts
+shots/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript incremental build cache
+*.tsbuildinfo

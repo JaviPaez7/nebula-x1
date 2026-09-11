@@ -1,0 +1,1453 @@
+/* ==========================================================================
+   NEBULA X1 — design system
+   A deliberately narrow industrial palette: black, cold graphite, machined
+   grey and one electric accent. No gradients as decoration, no glass cards.
+   ========================================================================== */
+
+:root {
+  --ink-0: #04060a;
+  --ink-1: #070a0f;
+  --ink-2: #0d1218;
+  --ink-3: #171d25;
+  --steel-1: #2c343e;
+  --steel-2: #4a5561;
+  --steel-3: #7d8894;
+  --paper: #e7edf4;
+  --paper-dim: #9fabb8;
+  --paper-faint: #5d6773;
+  --volt: #6fc2ff;
+  --volt-soft: #a8d8ff;
+  --volt-deep: #1d4f7a;
+  --signal: #ff3b4d;
+
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --gutter: clamp(18px, 3.2vw, 52px);
+  --edge: clamp(14px, 2vw, 30px);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ink-0);
+  color: var(--paper);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+html.is-locked body {
+  overflow: hidden;
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
+}
+
+::selection {
+  background: var(--volt);
+  color: var(--ink-0);
+}
+
+.noscript-fallback {
+  padding: 12vh var(--gutter);
+  max-width: 60ch;
+}
+.noscript-fallback h1 {
+  font-size: clamp(40px, 8vw, 96px);
+  letter-spacing: -0.03em;
+  margin: 0 0 0.4em;
+}
+
+/* ------------------------------------------------------------ typography */
+
+.t-kicker {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.72vw, 11px);
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.86;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.t-sub {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  color: var(--paper-dim);
+  margin: 0;
+}
+
+.t-label {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.7vw, 11px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+
+.t-value {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+
+.t-readout {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+}
+
+/* --------------------------------------------------------------- layout */
+
+.stage {
+  position: relative;
+  width: 100%;
+}
+
+.layer {
+  position: fixed;
+  inset: 0;
+}
+
+.layer-canvas {
+  z-index: 0;
+}
+
+.layer-grade {
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 8%, rgba(111, 194, 255, 0.05), transparent 55%),
+    radial-gradient(100% 70% at 50% 100%, rgba(0, 0, 0, 0.65), transparent 60%);
+  mix-blend-mode: normal;
+}
+
+.layer-ui {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* The caption rail must sit above every canvas layer but below the loader. */
+.captions {
+  z-index: 6;
+}
+
+.layer-ui a,
+.layer-ui button {
+  pointer-events: auto;
+}
+
+/* Very fine scanline + noise, purely to keep flat black areas from banding. */
+.layer-grain {
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* ------------------------------------------------------------ scroll rail */
+
+.scroll-track {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------- captions */
+
+.captions {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  display: block;
+}
+
+.cap {
+  position: absolute;
+  opacity: var(--o, 0);
+  visibility: var(--vis, hidden);
+  will-change: opacity, transform;
+  transition: none;
+}
+
+.cap-inner {
+  /* --t is written by the director every frame: -1 before the beat, 0 at rest,
+     +1 after. Everything below is pure CSS interpolation off that one number. */
+  transform: translate3d(calc(var(--t, 0) * 12px), calc(var(--t, 0) * var(--d, 30) * -1), 0);
+  filter: blur(calc(var(--t, 0) * var(--t, 0) * var(--bl, 8) * 1px));
+  will-change: transform, filter;
+}
+
+/* Position presets — the rail. */
+.cap--left {
+  left: var(--gutter);
+  bottom: clamp(70px, 12vh, 150px);
+  max-width: min(46ch, 40vw);
+}
+.cap--left-high {
+  left: var(--gutter);
+  top: clamp(112px, 17vh, 210px);
+  max-width: min(44ch, 40vw);
+}
+/* The finale: wordmark over the machine, call to action under it. */
+.cap--finale-top {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: var(--edge);
+  text-align: center;
+}
+.cap--finale-bottom {
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: clamp(50px, 8vh, 92px);
+  text-align: center;
+}
+.cap--right {
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: right;
+  max-width: min(40ch, 34vw);
+}
+.cap--right-low {
+  right: var(--gutter);
+  bottom: clamp(90px, 16vh, 200px);
+  text-align: right;
+  max-width: min(38ch, 32vw);
+}
+.cap--center {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: min(92vw, 1100px);
+}
+.cap--center-low {
+  left: 50%;
+  bottom: clamp(80px, 14vh, 180px);
+  transform: translateX(-50%);
+  text-align: center;
+  width: min(92vw, 900px);
+}
+.cap--left-low {
+  left: var(--gutter);
+  bottom: clamp(60px, 9vh, 110px);
+  max-width: min(52ch, 46vw);
+}
+
+.cap--left .cap-inner,
+.cap--left-high .cap-inner,
+.cap--left-low .cap-inner {
+  transform-origin: left center;
+}
+.cap--right .cap-inner,
+.cap--right-low .cap-inner {
+  transform-origin: right center;
+}
+.cap--finale-top .cap-inner,
+.cap--finale-bottom .cap-inner {
+  transform-origin: center center;
+}
+/* The intro wordmark sits above the machine, so it never masks the product. */
+.intro-title .cap-inner {
+  padding-bottom: 4px;
+}
+
+/* --------------------------------------------------------------- brand */
+
+.brand-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 0.84;
+}
+.brand-mark .x1 {
+  display: block;
+  color: var(--volt);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+}
+
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--steel-1), transparent);
+  border: 0;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------- chrome */
+
+.chrome-tl,
+.chrome-tr,
+.chrome-bl,
+.chrome-br {
+  position: fixed;
+  z-index: 4;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+.chrome-tl {
+  top: var(--edge);
+  left: var(--gutter);
+}
+.chrome-tr {
+  top: var(--edge);
+  right: var(--gutter);
+  text-align: right;
+}
+.chrome-bl {
+  bottom: var(--edge);
+  left: var(--gutter);
+}
+.chrome-br {
+  bottom: var(--edge);
+  right: var(--gutter);
+  text-align: right;
+}
+
+.chrome-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--paper);
+  letter-spacing: 0.3em;
+  font-weight: 500;
+}
+.chrome-wordmark i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  background: var(--volt);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--volt);
+}
+
+/* ---------------------------------------------------------------- nav */
+
+.chapter-nav {
+  position: fixed;
+  z-index: 5;
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.chapter-nav button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 5px 0 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--paper-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 0.4s var(--ease-out);
+}
+
+.chapter-nav button .nav-label {
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  white-space: nowrap;
+}
+
+.chapter-nav button .nav-tick {
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.45;
+  transition: width 0.45s var(--ease-out), opacity 0.45s var(--ease-out);
+}
+
+.chapter-nav button:hover,
+.chapter-nav button:focus-visible {
+  color: var(--paper);
+}
+.chapter-nav button:hover .nav-label,
+.chapter-nav button:focus-visible .nav-label,
+.chapter-nav button[data-active='true'] .nav-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.chapter-nav button[data-active='true'] {
+  color: var(--volt);
+}
+.chapter-nav button[data-active='true'] .nav-tick {
+  width: 34px;
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(111, 194, 255, 0.7);
+}
+.chapter-nav button[data-past='true'] .nav-tick {
+  opacity: 0.8;
+}
+
+/* ------------------------------------------------------------ progress */
+
+.progress-bar {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--edge) - 1px);
+  height: 1px;
+  background: rgba(125, 136, 148, 0.16);
+  z-index: 4;
+  pointer-events: none;
+}
+.progress-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: linear-gradient(90deg, var(--volt-deep), var(--volt));
+  box-shadow: 0 0 14px rgba(111, 194, 255, 0.55);
+}
+
+/* ---------------------------------------------------------- scroll hint */
+
+.scroll-hint {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(26px, 5vh, 54px);
+  transform: translateX(-50%);
+  z-index: 4;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: var(--hint, 1);
+  transition: opacity 0.6s var(--ease-out);
+}
+.scroll-hint .line {
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(180deg, transparent, var(--steel-2));
+  position: relative;
+  overflow: hidden;
+}
+.scroll-hint .line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 14px;
+  background: var(--volt);
+  animation: hint-run 2.4s var(--ease-inout) infinite;
+}
+@keyframes hint-run {
+  0% {
+    top: -14px;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    top: 42px;
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------- readout */
+
+.telemetry {
+  position: fixed;
+  z-index: 4;
+  right: var(--gutter);
+  bottom: clamp(80px, 14vh, 170px);
+  width: min(300px, 30vw);
+  text-align: right;
+  pointer-events: none;
+}
+.telemetry .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(125, 136, 148, 0.14);
+}
+.telemetry .row span:first-child {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+.telemetry .row span:last-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+
+/* --------------------------------------------------------------- metrics */
+
+.metric-row {
+  display: flex;
+  gap: clamp(18px, 3vw, 46px);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.metric-value {
+  font-size: clamp(26px, 3vw, 44px);
+  color: var(--paper);
+  white-space: nowrap;
+}
+.metric-value em {
+  font-style: normal;
+  font-size: 0.42em;
+  letter-spacing: 0.08em;
+  color: var(--volt);
+  margin-left: 0.34em;
+  vertical-align: 0.18em;
+}
+.metric-label {
+  margin-top: 9px;
+}
+
+.spec-col .spec-row:last-child {
+  border-bottom: 0;
+}
+
+/* --------------------------------------------------------------- loader */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--ink-0);
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+  padding: var(--gutter);
+  transition: opacity 1.1s var(--ease-out), visibility 1.1s;
+}
+.loader[data-done='true'] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.loader-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+}
+.loader-bar {
+  width: min(340px, 62vw);
+  height: 1px;
+  background: rgba(125, 136, 148, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+.loader-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--volt);
+  box-shadow: 0 0 16px var(--volt);
+  width: 0%;
+  transition: width 0.4s var(--ease-out);
+}
+.loader-pct {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--paper-dim);
+}
+.loader-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+  min-height: 1.2em;
+}
+.loader-top,
+.loader-bottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+.loader-bottom {
+  align-items: flex-end;
+}
+
+/* ------------------------------------------------------------- fallback */
+
+.fallback {
+  position: relative;
+  z-index: 2;
+  background: var(--ink-0);
+}
+
+.fb-hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 22px;
+  padding: clamp(40px, 12vh, 140px) var(--gutter) clamp(60px, 14vh, 160px);
+  border-bottom: 1px solid var(--steel-1);
+  position: relative;
+  overflow: hidden;
+}
+.fb-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(80% 60% at 70% 20%, rgba(111, 194, 255, 0.09), transparent 60%),
+    linear-gradient(180deg, #05070a, #03050700);
+  pointer-events: none;
+}
+.fb-title {
+  font-size: clamp(58px, 15vw, 210px);
+}
+.fb-spec {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--steel-1);
+  border-top: 1px solid var(--steel-1);
+  border-bottom: 1px solid var(--steel-1);
+}
+.fb-spec div {
+  background: var(--ink-1);
+  padding: 26px var(--gutter);
+}
+.fb-spec b {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: clamp(22px, 3vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  margin-top: 10px;
+  color: var(--paper);
+}
+
+/* --------------------------------------------------------------- specs */
+
+.spec-section {
+  position: relative;
+  z-index: 2;
+  background: var(--ink-0);
+  border-top: 1px solid var(--steel-1);
+  padding: clamp(70px, 14vh, 170px) var(--gutter) clamp(60px, 10vh, 120px);
+}
+
+.spec-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: clamp(38px, 7vh, 78px);
+}
+.spec-head h2 {
+  font-size: clamp(34px, 6vw, 92px);
+}
+
+.spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 0 1px;
+  background: var(--steel-1);
+  border: 1px solid var(--steel-1);
+}
+.spec-col {
+  background: var(--ink-0);
+  padding: 30px clamp(18px, 2.2vw, 34px) 34px;
+}
+.spec-col h3 {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--volt);
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--steel-1);
+}
+.spec-col dl {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+.spec-col .spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(125, 136, 148, 0.1);
+}
+.spec-col dt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--paper-faint);
+  text-transform: uppercase;
+}
+.spec-col dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--paper);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ CTA row */
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.btn {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--steel-2);
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  padding: 17px 30px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.5s var(--ease-out), border-color 0.5s var(--ease-out);
+  text-decoration: none;
+  display: inline-block;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  transform: translateY(101%);
+  transition: transform 0.55s var(--ease-out);
+  z-index: -1;
+}
+.btn:hover,
+.btn:focus-visible {
+  color: var(--ink-0);
+  border-color: var(--paper);
+}
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: translateY(0);
+}
+.btn--solid {
+  background: var(--paper);
+  color: var(--ink-0);
+  border-color: var(--paper);
+}
+.btn--solid::before {
+  background: var(--volt);
+}
+.btn--solid:hover {
+  color: var(--ink-0);
+  border-color: var(--volt);
+}
+
+/* --------------------------------------------------------- callouts */
+
+.callout {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+  z-index: 3;
+}
+.callout .co-lead {
+  position: absolute;
+  right: 0;
+  top: 0;
+  overflow: visible;
+}
+.callout .co-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--volt);
+  box-shadow: 0 0 10px var(--volt);
+  transform: translate(-50%, -50%);
+}
+.callout .co-card {
+  position: absolute;
+  white-space: nowrap;
+}
+.callout .co-card .n {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--volt);
+}
+.callout .co-card .l {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin-top: 3px;
+}
+.callout .co-card .m {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: var(--paper-faint);
+  margin-top: 4px;
+}
+
+/* ------------------------------------------------------------ cockpit */
+
+.cockpit-hud {
+  position: fixed;
+  z-index: 4;
+  left: 50%;
+  top: 50%;
+  width: min(620px, 74vw);
+  transform: translate(-50%, -50%);
+  opacity: var(--c, 0);
+  pointer-events: none;
+  visibility: var(--cvis, hidden);
+}
+
+/* -------------------------------------------------------- callout layer */
+
+.callout-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.callout {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.callout .co-lead {
+  position: absolute;
+  top: 0;
+  height: 1px;
+  overflow: visible;
+}
+.callout .co-lead line {
+  stroke: rgba(111, 194, 255, 0.6);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.callout .co-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--volt);
+  box-shadow: 0 0 12px rgba(111, 194, 255, 0.9);
+}
+.callout .co-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.callout .co-card .n {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--volt);
+}
+.callout .co-card .l {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin-top: 3px;
+}
+.callout .co-card .m {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--paper-faint);
+  margin-top: 4px;
+}
+
+/* -------------------------------------------------- phone exploded list */
+
+.mobile-parts {
+  display: none;
+}
+
+/* --------------------------------------------------------- cockpit hud */
+
+.chud {
+  position: relative;
+  font-family: var(--font-mono);
+  background: linear-gradient(180deg, rgba(6, 9, 13, 0.93), rgba(4, 6, 9, 0.88));
+  border: 1px solid rgba(125, 136, 148, 0.22);
+  border-radius: 3px;
+  padding: 18px 20px 14px;
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.75), inset 0 0 60px rgba(111, 194, 255, 0.045);
+  overflow: hidden;
+}
+.chud::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.022) 0px,
+    rgba(255, 255, 255, 0.022) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.6;
+}
+
+.chud-top,
+.chud-bottom,
+.chud-warn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chud-mode {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--volt);
+}
+.chud-mode .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+.chud-mode[data-mode='SPORT'] {
+  color: #ffd27a;
+}
+.chud-mode[data-mode='TRACK'] {
+  color: var(--signal);
+}
+.chud-mode[data-mode='SPORT'] .txt::after {
+  content: ' · Sport';
+}
+.chud-mode[data-mode='TRACK'] .txt::after {
+  content: ' · Track';
+}
+.chud-mode[data-mode='CITY'] .txt::after {
+  content: ' · City';
+}
+
+.chud-time {
+  text-align: right;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--paper);
+}
+.chud-time em {
+  display: block;
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+  margin-top: 4px;
+}
+
+.chud-mid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 22px;
+  align-items: flex-end;
+  margin: 16px 0 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(125, 136, 148, 0.16);
+}
+.chud-speed {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.chud-speed-num {
+  font-size: clamp(52px, 7.6vw, 96px);
+  font-weight: 300;
+  letter-spacing: -0.055em;
+  line-height: 0.86;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+  text-shadow: 0 0 34px rgba(111, 194, 255, 0.28);
+}
+.chud-speed-unit {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+.chud-speed-bar,
+.chud-cell .bar,
+.chud-nav-figures .bar {
+  display: block;
+  height: 2px;
+  background: rgba(125, 136, 148, 0.2);
+  overflow: hidden;
+}
+.chud-speed-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+}
+.chud-speed-bar i,
+.chud-cell .bar i,
+.chud-nav-figures .bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--volt-deep), var(--volt));
+  transform: scaleX(0);
+  transform-origin: left center;
+  box-shadow: 0 0 10px rgba(111, 194, 255, 0.7);
+}
+
+.chud-side {
+  display: grid;
+  gap: 12px;
+  min-width: 148px;
+}
+.chud-cell .k,
+.chud-stats .k,
+.chud-trace .k {
+  display: block;
+  font-size: 8.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+  margin-bottom: 5px;
+}
+.chud-cell .v,
+.chud-stats .v {
+  font-size: 13px;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.chud-cell .v b,
+.chud-stats .v b {
+  font-weight: 400;
+  font-size: 15px;
+}
+.chud-cell .bar {
+  margin-top: 7px;
+}
+
+.chud-bottom {
+  align-items: flex-start;
+  gap: 22px;
+}
+.chud-trace {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.chud-trace svg {
+  display: block;
+  width: 100%;
+  height: 34px;
+}
+.chud-trace polyline {
+  fill: none;
+  stroke: var(--volt);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 6px rgba(111, 194, 255, 0.75));
+}
+
+.chud-stats {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 10px 26px;
+  text-align: right;
+}
+
+.chud-nav {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(125, 136, 148, 0.16);
+}
+.chud-nav-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.chud-nav-head .k {
+  color: var(--paper-faint);
+}
+.chud-nav-head .v {
+  color: var(--paper);
+  letter-spacing: 0.12em;
+}
+.chud-nav-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+.chud-nav-arrow svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--volt);
+  filter: drop-shadow(0 0 8px rgba(111, 194, 255, 0.8));
+}
+.chud-nav-figures {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+}
+.chud-nav-figures .d {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--paper);
+}
+
+.chud-warn {
+  margin-top: 13px;
+  font-size: 8.5px;
+  letter-spacing: 0.24em;
+  color: var(--paper-faint);
+}
+.chud-warn .live {
+  color: var(--volt);
+  position: relative;
+  padding-left: 12px;
+}
+.chud-warn .live::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: var(--volt);
+  animation: live-pulse 2s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* -------------------------------------------------------------- footer */
+
+.site-footer {
+  position: relative;
+  z-index: 2;
+  background: var(--ink-0);
+  border-top: 1px solid var(--steel-1);
+  padding: clamp(40px, 7vh, 80px) var(--gutter) clamp(48px, 8vh, 90px);
+}
+.site-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.site-footer-links {
+  display: grid;
+  gap: 10px;
+  text-align: right;
+}
+
+/* ------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .cap--left,
+  .cap--left-high,
+  .cap--left-low {
+    max-width: min(78vw, 44ch);
+  }
+  .cap--right,
+  .cap--right-low {
+    max-width: min(74vw, 40ch);
+  }
+  .telemetry {
+    width: min(260px, 58vw);
+    bottom: clamp(64px, 11vh, 120px);
+  }
+  .cockpit-hud {
+    width: min(560px, 88vw);
+  }
+  .site-footer-links {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gutter: 20px;
+    --edge: 16px;
+  }
+
+  /* Phone layout: the rail collapses to a single column with four vertical
+     zones — headline above the machine, supporting copy below it, and the
+     call to action clear of the progress hairline. */
+  .cap--left,
+  .cap--left-high,
+  .cap--left-low,
+  .cap--right,
+  .cap--right-low {
+    left: var(--gutter);
+    right: var(--gutter);
+    max-width: none;
+    text-align: left;
+  }
+  .cap--left-high,
+  .cap--right {
+    top: clamp(60px, 9vh, 96px);
+    bottom: auto;
+  }
+  .cap--left {
+    top: auto;
+    bottom: clamp(102px, 17vh, 168px);
+  }
+  .cap--left-low,
+  .cap--right-low {
+    top: auto;
+    bottom: clamp(58px, 9vh, 92px);
+  }
+  .cap--left .cap-inner,
+  .cap--left-high .cap-inner,
+  .cap--left-low .cap-inner,
+  .cap--right .cap-inner,
+  .cap--right-low .cap-inner {
+    transform-origin: left center;
+  }
+
+  /* Display type has to come down hard, or the wordmark wraps and collides
+     with the machine behind it. */
+  .brand-mark {
+    font-size: clamp(38px, 13vw, 62px) !important;
+  }
+  .brand-mark .x1 {
+    font-size: 0.44em;
+  }
+  .t-display {
+    letter-spacing: -0.028em;
+  }
+  .cap .t-readout {
+    font-size: clamp(38px, 12vw, 58px) !important;
+  }
+  .cap--finale-top {
+    top: clamp(48px, 7vh, 78px);
+  }
+  .cap--finale-bottom {
+    bottom: clamp(46px, 7vh, 78px);
+  }
+
+  .metric-row {
+    gap: 16px;
+  }
+  .metric-value {
+    font-size: 24px;
+  }
+  .chrome-tr {
+    display: none;
+  }
+  .callout .co-card .m {
+    display: none;
+  }
+  .cockpit-hud {
+    width: min(420px, 92vw);
+  }
+  .chud-mid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .chud-side {
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+  }
+  .chud-stats {
+    gap: 8px 16px;
+  }
+  .chud-bottom {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (max-height: 620px) {
+  .cockpit-hud { width: min(520px, 86vw); }
+  .chud-speed-num { font-size: 46px; }
+}
+
+/* ------------------------------------------------------------- reduced */
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint .line::after,
+  .chud-warn .live::before {
+    animation: none;
+  }
+  .cap-inner {
+    transform: none;
+    filter: none;
+  }
+  .chud {
+    box-shadow: none;
+  }
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint .line::after {
+    animation: none;
+  }
+  .cap-inner {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* The chapter rail needs width to be readable, and tooltips that only appear on
+   hover are useless on touch, so it is dropped for both narrow windows and
+   touch pointers. The progress hairline and HUD carry the same information. */
+@media (max-width: 760px), (pointer: coarse) {
+  .chapter-nav {
+    display: none;
+  }
+  .telemetry {
+    display: none;
+  }
+}
+
+/* Phones get the parts list instead of leader lines, which need width the
+   screen does not have. */
+@media (max-width: 640px) {
+  .callout-layer {
+    display: none;
+  }
+  .mobile-parts {
+    position: fixed;
+    z-index: 5;
+    left: var(--gutter);
+    right: var(--gutter);
+    top: clamp(56px, 8vh, 92px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+  .mp-item {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-dim);
+  }
+  .mp-item b {
+    color: var(--volt);
+    font-weight: 400;
+    margin-right: 5px;
+  }
+}
