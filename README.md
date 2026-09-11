@@ -1,15 +1,21 @@
 # NEBULA X1
 
+**Live: https://javipaez7.github.io/nebula-x1/**
+
 A cinematic, scroll-driven product experience for a fictional next-generation
 electric hyperbike. Scroll position is the timeline: it drives the camera, the
 machine, the lighting desk, the particles and the interface, and scrolling
 backwards runs the entire film backwards.
+
+Best experienced full screen on a desktop with a discrete GPU. It works on a
+phone, but the film was framed for a wide window.
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
 npm run build      # type-check + production bundle
 npm run preview    # serve the built output
+npm run deploy     # build, push, and publish to GitHub Pages
 ```
 
 React 18 · TypeScript · Vite · three.js · react-three-fiber · Lenis
@@ -172,17 +178,27 @@ development-only and are not part of the shipped bundle.
 | `beauty.mjs` | The machine from fixed studio angles under reference lighting |
 | `fallback.mjs` | Launches Chrome with 3D APIs disabled and asserts the static presentation |
 | `probe.mjs` | Live renderer introspection: draw calls, triangles, programs, light intensities, target sizes |
+| `deploy.mjs` | Builds with the Pages base path, publishes the output to `gh-pages`, enables Pages, and waits for the URL to serve the built entry point |
 
 ```bash
 node tools/verify.mjs --w 1920 --h 1080 --label desktop
 node tools/verify.mjs --w 390 --h 844 --label mobile --mobile
 node tools/verify.mjs --w 1440 --h 900 --label reduced --reduced
 node tools/fallback.mjs
+TARGET_URL=https://javipaez7.github.io/nebula-x1/ node tools/verify.mjs --label live
 ```
 
 **Results:** 12/12 desktop, 12/12 laptop, 16/16 mobile, 13/13 reduced motion,
-12/12 against the production bundle, 9/9 no-WebGL — and a clean console in
-every configuration.
+12/12 against the production bundle, 12/12 against the deployed site, 9/9
+no-WebGL — and a clean console in every configuration.
+
+### Deployment
+
+`npm run deploy` publishes `dist/` to the `gh-pages` branch from a throwaway
+directory, so the source history stays clean and the published branch holds one
+commit containing exactly what the browser needs. `base` is read from
+`VITE_BASE`, which is why the same config works for the project page, a user
+page and a custom domain without edits.
 
 ### A note on GSAP
 
