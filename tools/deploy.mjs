@@ -11,8 +11,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs'
-import path from 'node:path'
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 
 const args = process.argv.slice(2)
 const getArg = (n, d) => {
@@ -133,46 +132,43 @@ if (!hasRepo()) {
 
 /* ----------------------------------------------------------- 4. publish dist */
 
-// A detached worktree keeps the built output out of the source history
-// entirely. Starting from an orphan branch — one with no parent commit — means
-// the published branch contains exactly one commit holding exactly the built
-// files, which is what Pages serves from the site root.
-const WORKTREE = '.deploy-worktree'
-if (existsSync(WORKTREE)) {
-  try {
-    run('git', ['worktree', 'remove', '--force', WORKTREE], { stdio: 'ignore' })
-  } catch {
-    /* not registered */
-  }
-}
+/**
+ * Publish the build output as a single-commit orphan branch.
+ *
+ * This runs in a throwaway directory rather than a git worktree: a worktree
+ * shares the parent's index and refuses `checkout --orphan` while the working
+ * directory holds tracked files, which is precisely the state a previous
+ * deploy leaves behind. A fresh `git init` has no such history to argue with,
+ * and the built files are pushed by URL so the source repo keeps only source.
+ */
+const ORPHAN = '.deploy-tmp'
+const remoteUrl = capture('git', ['remote', 'get-url', 'origin'])
+const branchSha = capture('git', ['rev-parse', 'HEAD'])
 
 console.log(`4/5  publishing build output to ${BRANCH}`)
-run('git', ['worktree', 'add', '--detach', WORKTREE, 'HEAD'], { stdio: 'ignore' })
+rmSync(ORPHAN, { recursive: true, force: true })
+mkdirSync(ORPHAN, { recursive: true })
 try {
-  // The working directory has to be cleared *before* the orphan checkout:
-  // git refuses to switch to a new branch when untracked files would be
-  // overwritten, which is exactly the situation the previous deploy leaves.
-  for (const entry of readdirSync(WORKTREE)) {
-    if (entry === '.git') continue
-    rmSync(path.join(WORKTREE, entry), { recursive: true, force: true })
-  }
-
-  run('git', ['-C', WORKTREE, 'checkout', '--orphan', BRANCH], { stdio: 'ignore' })
-
-  // Place the build output at the worktree root so the site is served from `/`
-  // rather than from `/dist/`.
-  cpSync('dist', WORKTREE, { recursive: true })
-
-  run('git', ['-C', WORKTREE, 'add', '-A', '-f'])
-  run('git', ['-C', WORKTREE, 'commit', '-q', '-m', `Deploy ${new Date().toISOString()}`])
-  run('git', ['-C', WORKTREE, 'push', '--force', 'origin', `${BRANCH}:${BRANCH}`])
+  run('git', ['-C', ORPHAN, 'init', '-q', '-b', BRANCH])
+  // Place the build output at the root so the site is served from `/` rather
+  // than from `/dist/`.
+  cpSync('dist', ORPHAN, { recursive: true })
+  run('git', ['-C', ORPHAN, 'add', '-A', '-f'])
+  run('git', [
+    '-C',
+    ORPHAN,
+    '-c',
+    `user.name=${capture('git', ['config', 'user.name'])}`,
+    '-c',
+    `user.email=${capture('git', ['config', 'user.email'])}`,
+    'commit',
+    '-q',
+    '-m',
+    `Deploy ${new Date().toISOString()} (source ${branchSha.slice(0, 7)})`,
+  ])
+  run('git', ['-C', ORPHAN, 'push', '--force', remoteUrl, `${BRANCH}:${BRANCH}`])
 } finally {
-  try {
-    rmSync(WORKTREE, { recursive: true, force: true })
-    run('git', ['worktree', 'prune'], { stdio: 'ignore' })
-  } catch {
-    /* already gone */
-  }
+  rmSync(ORPHAN, { recursive: true, force: true })
 }
 
 /* -------------------------------------------------------------- 5. pages */
